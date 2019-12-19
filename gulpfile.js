@@ -1,6 +1,6 @@
 var gulp         = require('gulp'),
 		sass         = require('gulp-sass'),
-		browserSync  = require('browser-sync'),
+		browserSync  = require('browser-sync').create(),
 		concat       = require('gulp-concat'),
 		uglify       = require('gulp-uglify-es').default,
 		cleancss     = require('gulp-clean-css'),
@@ -13,7 +13,7 @@ var gulp         = require('gulp'),
 
 // Local Server
 gulp.task('browser-sync', function() {
-	browserSync({
+	browserSync.init({
 		server: {
 			baseDir: 'app'
 		},
@@ -27,7 +27,10 @@ function bsReload(done) { browserSync.reload(); done(); };
 // Custom Styles
 gulp.task('styles', function() {
 	return gulp.src('app/sass/**/*.sass')
-	.pipe(sass({ outputStyle: 'expanded' }))
+	.pipe(sass({
+		outputStyle: 'expanded',
+		includePaths: [__dirname + '/node_modules']
+	}))
 	.pipe(concat('styles.min.css'))
 	.pipe(autoprefixer({
 		grid: true,
@@ -42,7 +45,7 @@ gulp.task('styles', function() {
 gulp.task('scripts', function() {
 	return gulp.src([
 		// 'node_modules/jquery/dist/jquery.min.js', // Optional jQuery plug-in (npm i --save-dev jquery)
-		'app/js/_lazy.js', // JS library plug-in example
+		'app/js/_libs.js', // JS libraries (all in one)
 		'app/js/_custom.js', // Custom scripts. Always at the end
 		])
 	.pipe(concat('scripts.min.js'))
@@ -105,7 +108,7 @@ gulp.task('rsync', function() {
 
 gulp.task('watch', function() {
 	gulp.watch('app/sass/**/*.sass', gulp.parallel('styles'));
-	gulp.watch(['libs/**/*.js', 'app/js/_custom.js'], gulp.parallel('scripts'));
+	gulp.watch(['app/js/_custom.js', 'app/js/_libs.js'], gulp.parallel('scripts'));
 	gulp.watch('app/*.html', gulp.parallel('code'));
 	gulp.watch('app/img/_src/**/*', gulp.parallel('img'));
 });
